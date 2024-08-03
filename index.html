@@ -24,7 +24,7 @@
             margin-top: 0;
             font-size: 24px;
         }
-        video, #photo, #previewPhoto {
+        video, #photo {
             width: 100%;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -46,7 +46,7 @@
             background-color: #ddd;
             cursor: not-allowed;
         }
-        #confirmationMessage, #spinner, #photoContainer, #emailForm, #previewContainer {
+        #confirmationMessage, #spinner, #photoContainer, #emailForm {
             display: none;
         }
         input[type="email"], textarea {
@@ -72,12 +72,6 @@
         <div id="photoContainer">
             <img id="photo" alt="Captured Photo">
             <button id="newPhotoButton">Take New Photo</button>
-            <button id="previewButton">Preview Photo</button>
-        </div>
-        <div id="previewContainer">
-            <img id="previewPhoto" alt="Preview Photo">
-            <button id="confirmButton">Send Photo</button>
-            <button id="cancelButton">Cancel</button>
         </div>
         <div id="emailForm">
             <input type="email" id="emailInput" placeholder="Enter your email" required>
@@ -111,6 +105,7 @@
             if (dataURL) {
                 photo.src = dataURL;
                 document.getElementById('photoContainer').style.display = 'block';
+                document.getElementById('emailForm').style.display = 'block';
                 document.getElementById('captureButton').style.display = 'none';
                 document.getElementById('video').style.display = 'none';
             } else {
@@ -196,6 +191,7 @@
                     const photo = document.getElementById('photo');
                     photo.src = e.target.result;
                     document.getElementById('photoContainer').style.display = 'block';
+                    document.getElementById('emailForm').style.display = 'block';
                     document.getElementById('video').style.display = 'none';
                     document.getElementById('captureButton').style.display = 'none';
                 };
@@ -207,31 +203,14 @@
             const video = document.getElementById('video');
             const captureButton = document.getElementById('captureButton');
             const newPhotoButton = document.getElementById('newPhotoButton');
-            const previewButton = document.getElementById('previewButton');
-            const confirmButton = document.getElementById('confirmButton');
-            const cancelButton = document.getElementById('cancelButton');
             const submitEmailButton = document.getElementById('submitEmailButton');
             const choosePhotoButton = document.getElementById('choosePhotoButton');
             const fileInput = document.getElementById('fileInput');
             const photo = document.getElementById('photo');
-            const previewPhoto = document.getElementById('previewPhoto');
 
             captureButton.addEventListener('click', capturePhoto);
             newPhotoButton.addEventListener('click', function() {
                 location.reload();
-            });
-            previewButton.addEventListener('click', function() {
-                previewPhoto.src = photo.src;
-                document.getElementById('previewContainer').style.display = 'block';
-                document.getElementById('photoContainer').style.display = 'none';
-            });
-            confirmButton.addEventListener('click', function() {
-                document.getElementById('emailForm').style.display = 'block';
-                document.getElementById('previewContainer').style.display = 'none';
-            });
-            cancelButton.addEventListener('click', function() {
-                document.getElementById('photoContainer').style.display = 'block';
-                document.getElementById('previewContainer').style.display = 'none';
             });
             submitEmailButton.addEventListener('click', function() {
                 const file = dataURLtoFile(photo.src, 'photo.png');
