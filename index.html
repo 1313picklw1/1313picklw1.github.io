@@ -130,28 +130,30 @@
         }
 
         function sendEmail(photoUrl) {
-            const emailInput = document.getElementById('emailInput').value;
-            const messageInput = document.getElementById('messageInput').value;
-            console.log('Sending email to:', emailInput);  // Debug log to ensure correct email input
-            console.log('Photo URL:', photoUrl); // Debug log to ensure correct photo URL
+    const emailInput = document.getElementById('emailInput').value;
+    const messageInput = document.getElementById('messageInput').value;
 
-            if (emailInput && photoUrl) {
-                emailjs.send('service_jhjv8km', 'template_8t9hwls', {
-                    to_email: emailInput,
-                    photo_url: photoUrl,
-                    message: messageInput
-                })
-                .then(response => {
-                    document.getElementById('confirmationMessage').style.display = 'block';
-                    console.log('Email sent successfully:', response);  // Debug log to check email sending
-                })
-                .catch(error => {
-                    console.error('Error sending email:', error);
-                });
-            } else {
-                alert('Please enter a valid email address and capture a photo.');
-            }
-        }
+    console.log('Sending email to:', emailInput);  // Debug log to ensure correct email input
+    console.log('Photo URL:', photoUrl); // Debug log to ensure correct photo URL
+
+    if (emailInput && photoUrl) {
+        emailjs.send('service_jhjv8km', 'template_8t9hwls', {
+            to_email: emailInput,
+            photo_url: photoUrl,
+            message: messageInput
+        })
+        .then(response => {
+            document.getElementById('confirmationMessage').style.display = 'block';
+            console.log('Email sent successfully:', response);  // Debug log to check email sending
+        })
+        .catch(error => {
+            console.error('Error sending email:', error);
+        });
+    } else {
+        alert('Please enter a valid email address and capture a photo.');
+    }
+}
+
 
         function dataURLtoFile(dataURL, filename) {
             const matches = dataURL.match(/^data:(.+);base64,(.+)$/);
