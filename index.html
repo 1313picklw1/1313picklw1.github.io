@@ -53,6 +53,13 @@
             margin-top: 10px;
             color: #28a745;
         }
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -65,6 +72,7 @@
         <button id="sendEmailButton" style="display: none;">Send Photo via Email</button>
         <div id="emailForm" style="display: none;">
             <input type="email" id="emailInput" placeholder="Enter your email" required>
+            <textarea id="messageInput" placeholder="Optional message"></textarea>
             <button id="submitEmailButton">Send Photo</button>
         </div>
         <p id="confirmationMessage" style="display: none;">Photo sent successfully!</p>
@@ -123,13 +131,15 @@
 
         function sendEmail(photoUrl) {
             const emailInput = document.getElementById('emailInput').value;
+            const messageInput = document.getElementById('messageInput').value;
             console.log('Sending email to:', emailInput);  // Debug log to ensure correct email input
             console.log('Photo URL:', photoUrl); // Debug log to ensure correct photo URL
 
             if (emailInput && photoUrl) {
                 emailjs.send('service_jhjv8km', 'template_8t9hwls', {
                     to_email: emailInput,
-                    photo_url: photoUrl
+                    photo_url: photoUrl,
+                    message: messageInput
                 })
                 .then(response => {
                     document.getElementById('confirmationMessage').style.display = 'block';
