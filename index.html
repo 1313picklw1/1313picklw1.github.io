@@ -72,6 +72,9 @@
         textarea {
             height: 100px;
         }
+        #fileInput {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -83,7 +86,8 @@
         <button id="captureButton">Capture Photo</button>
         <button id="newPhotoButton" style="display: none;">Take New Photo</button>
         <div class="switch-camera" id="switchCameraButton"></div>
-        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        <button id="choosePhotoButton">Choose Photo from Device</button>
+        <input type="file" id="fileInput" accept="image/*">
         <canvas id="canvas" style="display: none;"></canvas>
         <img id="photo" alt="Captured Photo">
         <div id="emailForm" style="display: none;">
@@ -140,6 +144,7 @@
                 photo.style.display = 'block';
                 document.getElementById('captureButton').style.display = 'none';
                 document.getElementById('switchCameraButton').style.display = 'none';
+                document.getElementById('choosePhotoButton').style.display = 'none';
                 document.getElementById('emailForm').style.display = 'block';
                 document.getElementById('newPhotoButton').style.display = 'block';
             } else {
@@ -159,6 +164,7 @@
                     photo.style.display = 'block';
                     document.getElementById('captureButton').style.display = 'none';
                     document.getElementById('switchCameraButton').style.display = 'none';
+                    document.getElementById('choosePhotoButton').style.display = 'none';
                     document.getElementById('emailForm').style.display = 'block';
                     document.getElementById('newPhotoButton').style.display = 'block';
                 };
@@ -232,10 +238,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('captureButton').addEventListener('click', capturePhoto);
             document.getElementById('switchCameraButton').addEventListener('click', switchCamera);
-            document.getElementById('fileInput').addEventListener('change', handleFileInput);
             document.getElementById('newPhotoButton').addEventListener('click', function() {
                 location.reload();
             });
+            document.getElementById('choosePhotoButton').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
+            });
+            document.getElementById('fileInput').addEventListener('change', handleFileInput);
 
             document.getElementById('submitEmailButton').addEventListener('click', function() {
                 const photo = document.getElementById('photo');
