@@ -59,13 +59,16 @@
         textarea {
             height: 100px;
         }
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <div id="container">
-        <h1>Camear</h1>
+        <h1>Camera App</h1>
         <p style="color: grey;">By Nicky</p>
-        <img src="camear.png" alt="Camear Logo" style="width: 100px; height: 100px; border-radius: 50%; margin: 10px auto; display: block;">
+        <img src="camear.png" alt="Camera Logo" style="width: 100px; height: 100px; border-radius: 50%; margin: 10px auto; display: block;">
         <video id="video" autoplay></video>
         <button id="captureButton">Capture Photo</button>
         <canvas id="canvas" style="display: none;"></canvas>
@@ -80,6 +83,7 @@
         </div>
         <p id="confirmationMessage">Photo sent successfully!</p>
         <div id="spinner">Loading...</div>
+        <p id="errorMessage" class="error"></p>
         <input type="file" id="fileInput" accept="image/*" style="display: none;">
         <button id="choosePhotoButton">Choose Photo from Device</button>
     </div>
@@ -108,8 +112,9 @@
                 document.getElementById('emailForm').style.display = 'block';
                 document.getElementById('captureButton').style.display = 'none';
                 document.getElementById('video').style.display = 'none';
+                document.getElementById('errorMessage').style.display = 'none';
             } else {
-                console.error('Failed to get data URL from canvas');
+                showError('Failed to capture photo.');
             }
         }
 
@@ -125,13 +130,13 @@
             .then(response => response.json())
             .then(result => {
                 if (result.error) {
-                    console.error('Upload error:', result.error);
+                    showError('Upload error: ' + result.error.message);
                 } else {
                     sendEmail(result.secure_url);
                 }
             })
             .catch(error => {
-                console.error('Fetch error:', error);
+                showError('Fetch error: ' + error.message);
             });
         }
 
@@ -154,20 +159,26 @@
                     console.log('Email sent successfully:', response);  // Debug log
                 })
                 .catch(error => {
-                    console.error('Error sending email:', error);
+                    showError('Error sending email: ' + error.message);
                     document.getElementById('spinner').style.display = 'none'; // Hide spinner on error
                 });
             } else {
-                alert('Please enter a valid email address and capture a photo.');
+                showError('Please enter a valid email address and capture a photo.');
                 document.getElementById('spinner').style.display = 'none'; // Hide spinner if inputs are invalid
             }
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
         }
 
         function dataURLtoFile(dataURL, filename) {
             const matches = dataURL.match(/^data:(.+);base64,(.+)$/);
 
             if (!matches) {
-                console.error('Invalid dataURL format:', dataURL);
+                showError('Invalid dataURL format.');
                 return null;
             }
 
@@ -209,19 +220,16 @@
             const photo = document.getElementById('photo');
 
             captureButton.addEventListener('click', capturePhoto);
-            newPhotoButton.addEventListener('click', function() {
-                location.reload();
-            });
-            submitEmailButton.addEventListener('click', function() {
+            newPhotoButton.addEventListener('click', () => location.reload());
+            submitEmailButton.addEventListener('click', () => {
+                document.getElementById('spinner').style.display = 'block'; // Show spinner when sending email
                 const file = dataURLtoFile(photo.src, 'photo.png');
                 if (file) {
-                    document.getElementById('spinner').style.display = 'block'; // Show spinner when sending email
                     uploadToCloudinary(file);
                 }
             });
-            choosePhotoButton.addEventListener('click', function() {
-                fileInput.click();
-            });
+
+            choosePhotoButton.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileSelect);
 
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -229,8 +237,7 @@
                     video.srcObject = stream;
                 })
                 .catch(err => {
-                    console.error('Error accessing camera:', err);
-                    alert('Unable to access camera. Please check your camera settings.');
+                    showError('Error accessing camera: ' + err.message);
                 });
         });
     </script>
