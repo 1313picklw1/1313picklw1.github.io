@@ -86,6 +86,8 @@
         </div>
         <p id="confirmationMessage">Photo sent successfully!</p>
         <div id="spinner">Loading...</div>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        <button id="choosePhotoButton">Choose Photo from Device</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -186,6 +188,21 @@
             return new File([arrayBuffer], filename, { type: mimeString });
         }
 
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photo = document.getElementById('photo');
+                    photo.src = e.target.result;
+                    document.getElementById('photoContainer').style.display = 'block';
+                    document.getElementById('video').style.display = 'none';
+                    document.getElementById('captureButton').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById('video');
             const captureButton = document.getElementById('captureButton');
@@ -194,38 +211,39 @@
             const confirmButton = document.getElementById('confirmButton');
             const cancelButton = document.getElementById('cancelButton');
             const submitEmailButton = document.getElementById('submitEmailButton');
+            const choosePhotoButton = document.getElementById('choosePhotoButton');
+            const fileInput = document.getElementById('fileInput');
             const photo = document.getElementById('photo');
             const previewPhoto = document.getElementById('previewPhoto');
 
             captureButton.addEventListener('click', capturePhoto);
-
             newPhotoButton.addEventListener('click', function() {
                 location.reload();
             });
-
             previewButton.addEventListener('click', function() {
                 previewPhoto.src = photo.src;
                 document.getElementById('previewContainer').style.display = 'block';
                 document.getElementById('photoContainer').style.display = 'none';
             });
-
             confirmButton.addEventListener('click', function() {
                 document.getElementById('emailForm').style.display = 'block';
                 document.getElementById('previewContainer').style.display = 'none';
             });
-
             cancelButton.addEventListener('click', function() {
-                document.getElementById('previewContainer').style.display = 'none';
                 document.getElementById('photoContainer').style.display = 'block';
+                document.getElementById('previewContainer').style.display = 'none';
             });
-
             submitEmailButton.addEventListener('click', function() {
-                document.getElementById('spinner').style.display = 'block';
                 const file = dataURLtoFile(photo.src, 'photo.png');
                 if (file) {
+                    document.getElementById('spinner').style.display = 'block'; // Show spinner when sending email
                     uploadToCloudinary(file);
                 }
             });
+            choosePhotoButton.addEventListener('click', function() {
+                fileInput.click();
+            });
+            fileInput.addEventListener('change', handleFileSelect);
 
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
