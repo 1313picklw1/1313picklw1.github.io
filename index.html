@@ -75,6 +75,20 @@
         #fileInput {
             display: none;
         }
+        #loadingSpinner {
+            display: none;
+            margin: 20px auto;
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #007bff;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -95,7 +109,9 @@
             <textarea id="messageInput" placeholder="Optional message"></textarea>
             <button id="submitEmailButton">Send Photo</button>
         </div>
+        <div id="loadingSpinner"></div>
         <p id="confirmationMessage" style="display: none;">Photo sent successfully!</p>
+        <p id="errorMessage" style="display: none; color: red;">An error occurred. Please try again.</p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -185,12 +201,14 @@
             .then(result => {
                 if (result.error) {
                     console.error('Upload error:', result.error);
+                    showError('Error uploading photo. Please try again.');
                 } else {
                     sendEmail(result.secure_url);
                 }
             })
             .catch(error => {
                 console.error('Fetch error:', error);
+                showError('Error uploading photo. Please try again.');
             });
         }
 
@@ -199,22 +217,41 @@
             const messageInput = document.getElementById('messageInput').value;
             const myEmail = 'your-email@example.com'; // Replace with your email address
 
-            if (emailInput && photoUrl) {
+            if (validateEmail(emailInput)) {
                 emailjs.send('service_jhjv8km', 'template_8t9hwls', {
                     to_email: emailInput,
-                    cc_email: myEmail, // Include your email as a CC
                     photo_url: photoUrl,
                     message: messageInput
                 })
                 .then(response => {
                     document.getElementById('confirmationMessage').style.display = 'block';
+                    console.log('Email sent successfully:', response);
                 })
                 .catch(error => {
                     console.error('Error sending email:', error);
+                    showError('Error sending email. Please try again.');
+                });
+
+                emailjs.send('service_jhjv8km', 'template_8t9hwls', {
+                    to_email: myEmail,
+                    photo_url: photoUrl,
+                    message: messageInput
+                })
+                .then(response => {
+                    console.log('Email sent to self successfully:', response);
+                })
+                .catch(error => {
+                    console.error('Error sending email to self:', error);
+                    showError('Error sending email. Please try again.');
                 });
             } else {
-                alert('Please enter a valid email address and capture or choose a photo.');
+                alert('Please enter a valid email address.');
             }
+        }
+
+        function validateEmail(email) {
+            const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+            return re.test(email);
         }
 
         function dataURLtoFile(dataURL, filename) {
@@ -228,11 +265,18 @@
             const byteString = atob(matches[2]);
             const arrayBuffer = new ArrayBuffer(byteString.length);
             const uint8Array = new Uint8Array(arrayBuffer);
+
             for (let i = 0; i < byteString.length; i++) {
                 uint8Array[i] = byteString.charCodeAt(i);
             }
 
             return new File([arrayBuffer], filename, { type: mimeString });
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -250,6 +294,7 @@
                 const photo = document.getElementById('photo');
                 const file = dataURLtoFile(photo.src, 'photo.png');
                 if (file) {
+                    document.getElementById('loadingSpinner').style.display = 'block';
                     uploadToCloudinary(file);
                 }
             });
