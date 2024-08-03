@@ -13,12 +13,16 @@
             background: #f4f4f4;
         }
         #container {
-            max-width: 100%;
+            max-width: 600px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 20px;
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
         }
         video {
             width: 100%;
@@ -36,7 +40,7 @@
             display: block;
             width: 100%;
             padding: 10px;
-            margin: 5px 0;
+            margin: 10px 0;
             border: none;
             border-radius: 4px;
             background-color: #007bff;
@@ -53,18 +57,23 @@
             margin-top: 10px;
             color: #28a745;
         }
-        textarea {
+        input[type="email"], textarea {
             width: calc(100% - 20px);
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+        textarea {
+            height: 100px;
+        }
     </style>
 </head>
 <body>
     <div id="container">
-        <h1>Capture and Send Photo</h1>
+        <h1>Camear</h1>
+        <p style="color: grey;">By Nicky</p>
+        <img src="camear.png" alt="Camear Logo" style="width: 100px; margin: 10px auto; display: block;">
         <video id="video" autoplay></video>
         <button id="captureButton">Capture Photo</button>
         <canvas id="canvas" style="display: none;"></canvas>
@@ -130,30 +139,29 @@
         }
 
         function sendEmail(photoUrl) {
-    const emailInput = document.getElementById('emailInput').value;
-    const messageInput = document.getElementById('messageInput').value;
+            const emailInput = document.getElementById('emailInput').value;
+            const messageInput = document.getElementById('messageInput').value;
 
-    console.log('Sending email to:', emailInput);  // Debug log to ensure correct email input
-    console.log('Photo URL:', photoUrl); // Debug log to ensure correct photo URL
+            console.log('Sending email to:', emailInput);  // Debug log
+            console.log('Photo URL:', photoUrl); // Debug log
 
-    if (emailInput && photoUrl) {
-        emailjs.send('service_jhjv8km', 'template_8t9hwls', {
-            to_email: emailInput,
-            photo_url: photoUrl,
-            message: messageInput
-        })
-        .then(response => {
-            document.getElementById('confirmationMessage').style.display = 'block';
-            console.log('Email sent successfully:', response);  // Debug log to check email sending
-        })
-        .catch(error => {
-            console.error('Error sending email:', error);
-        });
-    } else {
-        alert('Please enter a valid email address and capture a photo.');
-    }
-}
-
+            if (emailInput && photoUrl) {
+                emailjs.send('service_jhjv8km', 'template_8t9hwls', {
+                    to_email: emailInput,
+                    photo_url: photoUrl,
+                    message: messageInput
+                })
+                .then(response => {
+                    document.getElementById('confirmationMessage').style.display = 'block';
+                    console.log('Email sent successfully:', response);  // Debug log
+                })
+                .catch(error => {
+                    console.error('Error sending email:', error);
+                });
+            } else {
+                alert('Please enter a valid email address and capture a photo.');
+            }
+        }
 
         function dataURLtoFile(dataURL, filename) {
             const matches = dataURL.match(/^data:(.+);base64,(.+)$/);
