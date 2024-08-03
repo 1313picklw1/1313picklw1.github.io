@@ -88,6 +88,7 @@
         <video id="video" autoplay></video>
         <button id="captureButton">Capture Photo</button>
         <button id="newPhotoButton" style="display: none;">Take New Photo</button>
+        <button id="switchCameraButton">Switch Camera</button>
         <canvas id="canvas"></canvas>
         <img id="photo" alt="Captured Photo">
         <div id="emailForm" style="display: none;">
@@ -105,7 +106,7 @@
         const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dgsaxhagv/image/upload'; // Replace with your Cloudinary URL
         const uploadPreset = 'Preset1'; // Replace with your Cloudinary upload preset
         let currentStream = null;
-        let isFrontCamera = false;
+        let isFrontCamera = true; // Start with front camera
 
         function capturePhoto() {
             const video = document.getElementById('video');
@@ -124,7 +125,7 @@
                 document.getElementById('newPhotoButton').style.display = 'block';
                 document.getElementById('captureButton').style.display = 'none';
                 document.getElementById('emailForm').style.display = 'block';
-                video.style.display = 'none'; // Hide video feed after capturing photo
+                document.getElementById('video').style.display = 'none'; // Hide video feed after capturing photo
             } else {
                 console.error('Failed to get data URL from canvas');
             }
