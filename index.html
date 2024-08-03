@@ -24,19 +24,13 @@
             margin-top: 0;
             font-size: 24px;
         }
-        video {
-            width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        img {
-            display: none;
+        video, #photo, #previewPhoto {
             width: 100%;
             border: 1px solid #ddd;
             border-radius: 4px;
             margin-top: 10px;
         }
-        button, .switch-camera {
+        button {
             display: block;
             width: 100%;
             padding: 10px;
@@ -48,19 +42,12 @@
             font-size: 16px;
             cursor: pointer;
         }
-        button:disabled, .switch-camera:disabled {
+        button:disabled {
             background-color: #ddd;
             cursor: not-allowed;
         }
-        .switch-camera {
-            background: url('backcamera.png') no-repeat center center;
-            background-size: contain;
-            height: 50px;
-        }
-        #confirmationMessage {
+        #confirmationMessage, #spinner, #photoContainer, #emailForm, #previewContainer {
             display: none;
-            margin-top: 10px;
-            color: #28a745;
         }
         input[type="email"], textarea {
             width: calc(100% - 20px);
@@ -72,46 +59,33 @@
         textarea {
             height: 100px;
         }
-        #fileInput {
-            display: none;
-        }
-        #loadingSpinner {
-            display: none;
-            margin: 20px auto;
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 16px solid #007bff;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
     <div id="container">
         <h1>Camear</h1>
         <p style="color: grey;">By Nicky</p>
-        <img src="camear.png" alt="Camear Logo" style="width: 100px; margin: 10px auto; display: block; border-radius: 50%;">
+        <img src="camear.png" alt="Camear Logo" style="width: 100px; height: 100px; border-radius: 50%; margin: 10px auto; display: block;">
         <video id="video" autoplay></video>
         <button id="captureButton">Capture Photo</button>
-        <button id="newPhotoButton" style="display: none;">Take New Photo</button>
-        <div class="switch-camera" id="switchCameraButton"></div>
-        <input type="file" id="fileInput" accept="image/*">
-        <button id="choosePhotoButton">Choose Photo from Device</button>
         <canvas id="canvas" style="display: none;"></canvas>
-        <img id="photo" alt="Captured Photo">
-        <div id="emailForm" style="display: none;">
+        <div id="photoContainer">
+            <img id="photo" alt="Captured Photo">
+            <button id="newPhotoButton">Take New Photo</button>
+            <button id="previewButton">Preview Photo</button>
+        </div>
+        <div id="previewContainer">
+            <img id="previewPhoto" alt="Preview Photo">
+            <button id="confirmButton">Send Photo</button>
+            <button id="cancelButton">Cancel</button>
+        </div>
+        <div id="emailForm">
             <input type="email" id="emailInput" placeholder="Enter your email" required>
             <textarea id="messageInput" placeholder="Optional message"></textarea>
             <button id="submitEmailButton">Send Photo</button>
         </div>
-        <div id="loadingSpinner"></div>
-        <p id="confirmationMessage" style="display: none;">Photo sent successfully!</p>
-        <p id="errorMessage" style="display: none; color: red;">An error occurred. Please try again.</p>
+        <p id="confirmationMessage">Photo sent successfully!</p>
+        <div id="spinner">Loading...</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -120,29 +94,6 @@
 
         const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dgsaxhagv/image/upload'; // Replace with your Cloudinary URL
         const uploadPreset = 'Preset1'; // Replace with your Cloudinary upload preset
-
-        let currentStream;
-        let currentFacingMode = 'user';
-
-        function switchCamera() {
-            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-            startCamera();
-        }
-
-        function startCamera() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode } })
-                .then(stream => {
-                    currentStream = stream;
-                    document.getElementById('video').srcObject = stream;
-                })
-                .catch(err => {
-                    console.error('Error accessing camera:', err);
-                    alert('Unable to access camera. Please check your camera settings.');
-                });
-        }
 
         function capturePhoto() {
             const video = document.getElementById('video');
@@ -157,34 +108,11 @@
 
             if (dataURL) {
                 photo.src = dataURL;
-                photo.style.display = 'block';
+                document.getElementById('photoContainer').style.display = 'block';
                 document.getElementById('captureButton').style.display = 'none';
-                document.getElementById('switchCameraButton').style.display = 'none';
-                document.getElementById('choosePhotoButton').style.display = 'none';
-                document.getElementById('emailForm').style.display = 'block';
-                document.getElementById('newPhotoButton').style.display = 'block';
+                document.getElementById('video').style.display = 'none';
             } else {
                 console.error('Failed to get data URL from canvas');
-            }
-        }
-
-        function handleFileInput() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const photo = document.getElementById('photo');
-                    photo.src = event.target.result;
-                    photo.style.display = 'block';
-                    document.getElementById('captureButton').style.display = 'none';
-                    document.getElementById('switchCameraButton').style.display = 'none';
-                    document.getElementById('choosePhotoButton').style.display = 'none';
-                    document.getElementById('emailForm').style.display = 'block';
-                    document.getElementById('newPhotoButton').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
             }
         }
 
@@ -201,23 +129,23 @@
             .then(result => {
                 if (result.error) {
                     console.error('Upload error:', result.error);
-                    showError('Error uploading photo. Please try again.');
                 } else {
                     sendEmail(result.secure_url);
                 }
             })
             .catch(error => {
                 console.error('Fetch error:', error);
-                showError('Error uploading photo. Please try again.');
             });
         }
 
         function sendEmail(photoUrl) {
             const emailInput = document.getElementById('emailInput').value;
             const messageInput = document.getElementById('messageInput').value;
-            const myEmail = 'your-email@example.com'; // Replace with your email address
 
-            if (validateEmail(emailInput)) {
+            console.log('Sending email to:', emailInput);  // Debug log
+            console.log('Photo URL:', photoUrl); // Debug log
+
+            if (emailInput && photoUrl) {
                 emailjs.send('service_jhjv8km', 'template_8t9hwls', {
                     to_email: emailInput,
                     photo_url: photoUrl,
@@ -225,37 +153,22 @@
                 })
                 .then(response => {
                     document.getElementById('confirmationMessage').style.display = 'block';
-                    console.log('Email sent successfully:', response);
+                    document.getElementById('spinner').style.display = 'none'; // Hide spinner after email sent
+                    console.log('Email sent successfully:', response);  // Debug log
                 })
                 .catch(error => {
                     console.error('Error sending email:', error);
-                    showError('Error sending email. Please try again.');
-                });
-
-                emailjs.send('service_jhjv8km', 'template_8t9hwls', {
-                    to_email: myEmail,
-                    photo_url: photoUrl,
-                    message: messageInput
-                })
-                .then(response => {
-                    console.log('Email sent to self successfully:', response);
-                })
-                .catch(error => {
-                    console.error('Error sending email to self:', error);
-                    showError('Error sending email. Please try again.');
+                    document.getElementById('spinner').style.display = 'none'; // Hide spinner on error
                 });
             } else {
-                alert('Please enter a valid email address.');
+                alert('Please enter a valid email address and capture a photo.');
+                document.getElementById('spinner').style.display = 'none'; // Hide spinner if inputs are invalid
             }
-        }
-
-        function validateEmail(email) {
-            const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-            return re.test(email);
         }
 
         function dataURLtoFile(dataURL, filename) {
             const matches = dataURL.match(/^data:(.+);base64,(.+)$/);
+
             if (!matches) {
                 console.error('Invalid dataURL format:', dataURL);
                 return null;
@@ -273,33 +186,55 @@
             return new File([arrayBuffer], filename, { type: mimeString });
         }
 
-        function showError(message) {
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('captureButton').addEventListener('click', capturePhoto);
-            document.getElementById('switchCameraButton').addEventListener('click', switchCamera);
-            document.getElementById('newPhotoButton').addEventListener('click', function() {
+            const video = document.getElementById('video');
+            const captureButton = document.getElementById('captureButton');
+            const newPhotoButton = document.getElementById('newPhotoButton');
+            const previewButton = document.getElementById('previewButton');
+            const confirmButton = document.getElementById('confirmButton');
+            const cancelButton = document.getElementById('cancelButton');
+            const submitEmailButton = document.getElementById('submitEmailButton');
+            const photo = document.getElementById('photo');
+            const previewPhoto = document.getElementById('previewPhoto');
+
+            captureButton.addEventListener('click', capturePhoto);
+
+            newPhotoButton.addEventListener('click', function() {
                 location.reload();
             });
-            document.getElementById('choosePhotoButton').addEventListener('click', function() {
-                document.getElementById('fileInput').click();
-            });
-            document.getElementById('fileInput').addEventListener('change', handleFileInput);
 
-            document.getElementById('submitEmailButton').addEventListener('click', function() {
-                const photo = document.getElementById('photo');
+            previewButton.addEventListener('click', function() {
+                previewPhoto.src = photo.src;
+                document.getElementById('previewContainer').style.display = 'block';
+                document.getElementById('photoContainer').style.display = 'none';
+            });
+
+            confirmButton.addEventListener('click', function() {
+                document.getElementById('emailForm').style.display = 'block';
+                document.getElementById('previewContainer').style.display = 'none';
+            });
+
+            cancelButton.addEventListener('click', function() {
+                document.getElementById('previewContainer').style.display = 'none';
+                document.getElementById('photoContainer').style.display = 'block';
+            });
+
+            submitEmailButton.addEventListener('click', function() {
+                document.getElementById('spinner').style.display = 'block';
                 const file = dataURLtoFile(photo.src, 'photo.png');
                 if (file) {
-                    document.getElementById('loadingSpinner').style.display = 'block';
                     uploadToCloudinary(file);
                 }
             });
 
-            startCamera();
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error('Error accessing camera:', err);
+                    alert('Unable to access camera. Please check your camera settings.');
+                });
         });
     </script>
 </body>
