@@ -24,12 +24,23 @@
             margin-top: 0;
             font-size: 24px;
         }
+        img.logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%; /* Makes the image circular */
+            margin: 10px auto;
+            display: block;
+        }
         video {
             width: 100%;
             border: 1px solid #ddd;
             border-radius: 4px;
+            display: block;
         }
-        img {
+        canvas {
+            display: none;
+        }
+        #photo {
             display: none;
             width: 100%;
             border: 1px solid #ddd;
@@ -73,10 +84,11 @@
     <div id="container">
         <h1>Camear</h1>
         <p style="color: grey;">By Nicky</p>
-        <img src="camear.png" alt="Camear Logo" style="width: 100px; margin: 10px auto; display: block;">
+        <img src="camear.png" alt="Camear Logo" class="logo">
         <video id="video" autoplay></video>
         <button id="captureButton">Capture Photo</button>
-        <canvas id="canvas" style="display: none;"></canvas>
+        <button id="newPhotoButton" style="display: none;">Take New Photo</button>
+        <canvas id="canvas"></canvas>
         <img id="photo" alt="Captured Photo">
         <div id="emailForm" style="display: none;">
             <input type="email" id="emailInput" placeholder="Enter your email" required>
@@ -92,6 +104,8 @@
 
         const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dgsaxhagv/image/upload'; // Replace with your Cloudinary URL
         const uploadPreset = 'Preset1'; // Replace with your Cloudinary upload preset
+        let currentStream = null;
+        let isFrontCamera = false;
 
         function capturePhoto() {
             const video = document.getElementById('video');
@@ -107,9 +121,10 @@
             if (dataURL) {
                 photo.src = dataURL;
                 photo.style.display = 'block';
-                document.getElementById('sendEmailButton').style.display = 'block';
+                document.getElementById('newPhotoButton').style.display = 'block';
                 document.getElementById('captureButton').style.display = 'none';
                 document.getElementById('emailForm').style.display = 'block';
+                video.style.display = 'none'; // Hide video feed after capturing photo
             } else {
                 console.error('Failed to get data URL from canvas');
             }
@@ -182,7 +197,27 @@
             return new File([arrayBuffer], filename, { type: mimeString });
         }
 
+        function startCamera(useFrontCamera) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: useFrontCamera ? 'user' : 'environment' }
+            })
+            .then(stream => {
+                document.getElementById('video').srcObject = stream;
+                currentStream = stream;
+            })
+            .catch(err => {
+                console.error('Error accessing camera:', err);
+                alert('Unable to access camera. Please check your camera settings.');
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            startCamera(isFrontCamera);
+
             document.getElementById('captureButton').addEventListener('click', capturePhoto);
 
             document.getElementById('submitEmailButton').addEventListener('click', function() {
@@ -193,14 +228,19 @@
                 }
             });
 
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    document.getElementById('video').srcObject = stream;
-                })
-                .catch(err => {
-                    console.error('Error accessing camera:', err);
-                    alert('Unable to access camera. Please check your camera settings.');
-                });
+            document.getElementById('newPhotoButton').addEventListener('click', function() {
+                document.getElementById('photo').style.display = 'none';
+                document.getElementById('emailForm').style.display = 'none';
+                document.getElementById('captureButton').style.display = 'block';
+                document.getElementById('newPhotoButton').style.display = 'none';
+                document.getElementById('video').style.display = 'block';
+                startCamera(isFrontCamera);
+            });
+
+            document.getElementById('switchCameraButton').addEventListener('click', function() {
+                isFrontCamera = !isFrontCamera;
+                startCamera(isFrontCamera);
+            });
         });
     </script>
 </body>
