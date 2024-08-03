@@ -78,6 +78,15 @@
         textarea {
             height: 100px;
         }
+        #switchCameraButton {
+            background: url('backcamera.png') no-repeat center center;
+            background-size: contain;
+            width: 50px; /* Adjust size as needed */
+            height: 50px; /* Adjust size as needed */
+            border: none;
+            cursor: pointer;
+            margin: 10px auto;
+        }
     </style>
 </head>
 <body>
@@ -88,7 +97,7 @@
         <video id="video" autoplay></video>
         <button id="captureButton">Capture Photo</button>
         <button id="newPhotoButton" style="display: none;">Take New Photo</button>
-        <button id="switchCameraButton">Switch Camera</button>
+        <button id="switchCameraButton"></button>
         <canvas id="canvas"></canvas>
         <img id="photo" alt="Captured Photo">
         <div id="emailForm" style="display: none;">
