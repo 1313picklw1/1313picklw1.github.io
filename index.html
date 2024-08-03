@@ -36,7 +36,7 @@
             border-radius: 4px;
             margin-top: 10px;
         }
-        button {
+        button, .switch-camera {
             display: block;
             width: 100%;
             padding: 10px;
@@ -48,9 +48,14 @@
             font-size: 16px;
             cursor: pointer;
         }
-        button:disabled {
+        button:disabled, .switch-camera:disabled {
             background-color: #ddd;
             cursor: not-allowed;
+        }
+        .switch-camera {
+            background: url('backcamera.png') no-repeat center center;
+            background-size: contain;
+            height: 50px;
         }
         #confirmationMessage {
             display: none;
@@ -67,9 +72,6 @@
         textarea {
             height: 100px;
         }
-        #fileInput {
-            margin: 10px 0;
-        }
     </style>
 </head>
 <body>
@@ -79,8 +81,9 @@
         <img src="camear.png" alt="Camear Logo" style="width: 100px; margin: 10px auto; display: block; border-radius: 50%;">
         <video id="video" autoplay></video>
         <button id="captureButton">Capture Photo</button>
-        <input type="file" id="fileInput" accept="image/*">
-        <button id="choosePhotoButton">Choose Photo from Device</button>
+        <button id="newPhotoButton" style="display: none;">Take New Photo</button>
+        <div class="switch-camera" id="switchCameraButton"></div>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
         <canvas id="canvas" style="display: none;"></canvas>
         <img id="photo" alt="Captured Photo">
         <div id="emailForm" style="display: none;">
@@ -98,6 +101,29 @@
         const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dgsaxhagv/image/upload'; // Replace with your Cloudinary URL
         const uploadPreset = 'Preset1'; // Replace with your Cloudinary upload preset
 
+        let currentStream;
+        let currentFacingMode = 'user';
+
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            startCamera();
+        }
+
+        function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode } })
+                .then(stream => {
+                    currentStream = stream;
+                    document.getElementById('video').srcObject = stream;
+                })
+                .catch(err => {
+                    console.error('Error accessing camera:', err);
+                    alert('Unable to access camera. Please check your camera settings.');
+                });
+        }
+
         function capturePhoto() {
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
@@ -113,9 +139,9 @@
                 photo.src = dataURL;
                 photo.style.display = 'block';
                 document.getElementById('captureButton').style.display = 'none';
-                document.getElementById('fileInput').style.display = 'none';
-                document.getElementById('choosePhotoButton').style.display = 'none';
+                document.getElementById('switchCameraButton').style.display = 'none';
                 document.getElementById('emailForm').style.display = 'block';
+                document.getElementById('newPhotoButton').style.display = 'block';
             } else {
                 console.error('Failed to get data URL from canvas');
             }
@@ -132,9 +158,9 @@
                     photo.src = event.target.result;
                     photo.style.display = 'block';
                     document.getElementById('captureButton').style.display = 'none';
-                    document.getElementById('fileInput').style.display = 'none';
-                    document.getElementById('choosePhotoButton').style.display = 'none';
+                    document.getElementById('switchCameraButton').style.display = 'none';
                     document.getElementById('emailForm').style.display = 'block';
+                    document.getElementById('newPhotoButton').style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             }
@@ -205,7 +231,11 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('captureButton').addEventListener('click', capturePhoto);
-            document.getElementById('choosePhotoButton').addEventListener('click', handleFileInput);
+            document.getElementById('switchCameraButton').addEventListener('click', switchCamera);
+            document.getElementById('fileInput').addEventListener('change', handleFileInput);
+            document.getElementById('newPhotoButton').addEventListener('click', function() {
+                location.reload();
+            });
 
             document.getElementById('submitEmailButton').addEventListener('click', function() {
                 const photo = document.getElementById('photo');
@@ -215,14 +245,7 @@
                 }
             });
 
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-                .then(stream => {
-                    document.getElementById('video').srcObject = stream;
-                })
-                .catch(err => {
-                    console.error('Error accessing camera:', err);
-                    alert('Unable to access camera. Please check your camera settings.');
-                });
+            startCamera();
         });
     </script>
 </body>
