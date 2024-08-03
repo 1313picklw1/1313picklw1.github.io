@@ -123,6 +123,8 @@
 
         function sendEmail(photoUrl) {
             const emailInput = document.getElementById('emailInput').value;
+            console.log('Sending email to:', emailInput);  // Debug log to ensure correct email input
+            console.log('Photo URL:', photoUrl); // Debug log to ensure correct photo URL
 
             if (emailInput && photoUrl) {
                 emailjs.send('service_jhjv8km', 'template_8t9hwls', {
@@ -131,6 +133,7 @@
                 })
                 .then(response => {
                     document.getElementById('confirmationMessage').style.display = 'block';
+                    console.log('Email sent successfully:', response);  // Debug log to check email sending
                 })
                 .catch(error => {
                     console.error('Error sending email:', error);
