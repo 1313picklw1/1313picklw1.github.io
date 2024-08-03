@@ -72,11 +72,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
-        // Initialize EmailJS with your public key
-        emailjs.init('pE5B9dW3l25kyPG0K');
+        emailjs.init('pE5B9dW3l25kyPG0K'); // Replace with your EmailJS public key
 
-        // Cloudinary details
-        const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dgsaxhagv/image/upload'; // Replace with your Cloudinary cloud name
+        const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dgsaxhagv/image/upload'; // Replace with your Cloudinary URL
         const uploadPreset = 'Preset1'; // Replace with your Cloudinary upload preset
 
         function capturePhoto() {
@@ -102,11 +100,6 @@
         }
 
         function uploadToCloudinary(file) {
-            if (!file) {
-                console.error('No file provided for upload');
-                return;
-            }
-
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', uploadPreset);
@@ -120,8 +113,7 @@
                 if (result.error) {
                     console.error('Upload error:', result.error);
                 } else {
-                    console.log('File uploaded to Cloudinary:', result);
-                    sendEmail(result.secure_url); // Pass the Cloudinary URL to the email function
+                    sendEmail(result.secure_url);
                 }
             })
             .catch(error => {
@@ -138,7 +130,6 @@
                     photo_url: photoUrl
                 })
                 .then(response => {
-                    console.log('Email sent successfully:', response);
                     document.getElementById('confirmationMessage').style.display = 'block';
                 })
                 .catch(error => {
@@ -170,9 +161,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('captureButton').addEventListener('click', function() {
-                capturePhoto();
-            });
+            document.getElementById('captureButton').addEventListener('click', capturePhoto);
 
             document.getElementById('submitEmailButton').addEventListener('click', function() {
                 const photo = document.getElementById('photo');
